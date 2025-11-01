@@ -20,8 +20,8 @@ class ProjectResource extends Resource
 {
     protected static ?string $model = Project::class;
 
-    // Use null or a valid icon name from your blade-icons set to avoid SvgNotFound
-    protected static BackedEnum|string|null $navigationIcon = null;
+    protected static string|\BackedEnum|null $navigationIcon = 'lucide-rocket';
+
     protected static ?string $navigationLabel = 'Projects';
     protected static ?int $navigationSort = 2;
 
@@ -35,21 +35,21 @@ class ProjectResource extends Resource
             TextInput::make('subtitle')
                 ->maxLength(255),
 
-            Textarea::make('description')
-                ->rows(5),
-
             TextInput::make('tools')
                 ->helperText('Comma separated tools')
                 ->maxLength(255),
+
+            TextInput::make('link')
+                ->url(),
+
+            Textarea::make('description')
+                ->rows(5),
 
             FileUpload::make('images')
                 ->image()
                 ->multiple()
                 ->disk('public_project')
                 ->enableReordering(),
-
-            TextInput::make('link')
-                ->url(),
         ]);
     }
 
