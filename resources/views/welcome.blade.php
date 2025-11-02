@@ -299,7 +299,7 @@
     <script src="https://unpkg.com/scrollreveal"></script>
 
     <!-- MAIN JS -->
-    @vite(['resources/css/welcome.css', 'resources/js/main.js'])
+    @vite(['resources/css/welcome.css', 'resources/js/welcome.js'])
 
     <!-- Emailjs -->
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>

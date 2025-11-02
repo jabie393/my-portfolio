@@ -1,0 +1,85 @@
+.notif {
+    position: fixed;
+    right: 1rem;
+    /* allow width to fit content but limit with max-width */
+    width: auto;
+    max-width: 360px;
+    background: #111827;
+    color: #fff;
+    padding: 12px 14px;
+    border-radius: 8px;
+    box-shadow: 0 10px 30px rgba(2, 6, 23, 0.6);
+    transform: translateX(120%);
+    transition: transform 300ms cubic-bezier(0.2, 0.9, 0.2, 1), opacity 300ms,
+        top 300ms ease;
+    opacity: 0;
+    z-index: 9999;
+    display: inline-flex; /* shrink to content */
+    gap: 10px;
+    align-items: center;
+    font-size: 14px;
+    white-space: normal; /* allow wrapping when long */
+}
+.notif.show {
+    transform: translateX(0);
+    opacity: 1;
+}
+.notif .icon {
+    width: auto;
+    height: 20px;
+    flex: 0 0 auto;
+}
+.notif .message {
+    line-height: 1.2;
+    display: inline-block;
+}
+.notif .close {
+    margin-left: 8px;
+    cursor: pointer;
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 18px;
+}
+
+/* new styles for icons and types */
+.notif .notif-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 20px;
+    flex: 0 0 auto;
+    margin-right: 8px;
+}
+.notif.has-icon {
+    padding-left: 12px;
+}
+/* Type colors */
+.notif.type-error {
+    background: #7f1d1d;
+}
+.notif.type-success {
+    background: #064e3b;
+}
+.notif.type-info {
+    background: #0f172a;
+}
+.notif.type-warning {
+    background: #92400e;
+}
+
+/* Field-specific subtle accent */
+.notif.field-email {
+    box-shadow: 0 10px 30px rgba(2, 6, 23, 0.6),
+        0 0 0 4px rgba(99, 102, 241, 0.08);
+}
+.notif.field-password {
+    box-shadow: 0 10px 30px rgba(2, 6, 23, 0.6),
+        0 0 0 4px rgba(239, 68, 68, 0.06);
+}
+
+/* input highlight when error */
+.input-error-highlight {
+    outline: 3px solid rgba(239, 68, 68, 0.25);
+    box-shadow: 0 0 0 1px rgba(239, 68, 68, 0.45);
+}

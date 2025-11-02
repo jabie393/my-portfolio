@@ -7,12 +7,13 @@ export default defineConfig({
         laravel({
             input: [
                 'resources/css/app.css',
-                'resources/css/auth.css',
                 'resources/css/welcome.css',
+                'resources/css/auth.css',
+                'resources/css/custom-notifications.css',
                 'resources/js/app.js',
+                'resources/js/welcome.js',
                 'resources/js/auth.js',
-                'resources/js/main.js',
-                'resources/css/sidebar.css',
+                'resources/js/custom-notifications.js',
             ],
             refresh: true,
         }),

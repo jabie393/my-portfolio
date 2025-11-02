@@ -47,12 +47,24 @@ Route::post('/login', function (Request $request) {
 
     $remember = $request->boolean('remember');
 
-    if (\Illuminate\Support\Facades\Auth::attempt($credentials, $remember)) {
-        $request->session()->regenerate();
-        return redirect()->intended('/admin');
+    // Find user by email first
+    $user = \App\Models\User::where('email', $credentials['email'])->first();
+
+    if (! $user) {
+        // Email not found
+        return back()->withErrors(['email' => 'Email not found!'])->onlyInput('email');
     }
 
-    return back()->withErrors(['email' => __('auth.failed')])->onlyInput('email');
+    // Check password
+    if (! \Illuminate\Support\Facades\Hash::check($credentials['password'], $user->password)) {
+        // Password incorrect
+        return back()->withErrors(['password' => 'Incorrect password!'])->onlyInput('email');
+    }
+
+    // At this point credentials are valid — log the user in
+    \Illuminate\Support\Facades\Auth::login($user, $remember);
+    $request->session()->regenerate();
+    return redirect()->intended('/admin');
 })->name('login.store');
 
 Route::post('/logout', function (Request $request) {
