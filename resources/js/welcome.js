@@ -1,4 +1,75 @@
 /* ===== js preload ===== */
+
+// Ensure a safe entrypoint for starting animations after the preloader hides
+function startAnimations() {
+  if (window._startAnimationsCalled) return;
+  window._startAnimationsCalled = true;
+
+  // debug: log invocation count
+  console.debug('[startAnimations] invoked');
+
+  try {
+    // make sure main content is visible before running animations
+    const contentEl = document.getElementById('content');
+    if (contentEl) {
+      // remove any inline display:none or opacity that may hide the content
+      contentEl.style.display = '';
+      contentEl.style.opacity = '';
+      contentEl.style.visibility = 'visible';
+    }
+
+    // If ScrollReveal isn't loaded yet, bail silently
+    if (typeof ScrollReveal === 'undefined') return;
+
+    // Initialize ScrollReveal once and run reveals after preloader hides
+    if (!window._sr) {
+      window._sr = ScrollReveal({
+        origin: 'top',
+        distance: '60px',
+        duration: 2000,
+        delay: 200,
+        reset: false // don't replay animations on refresh/scroll
+      });
+
+      const sr = window._sr;
+      // Home should not re-animate on refresh; keep cleanup so inline styles are removed after reveal
+      // reveal groups (each selector appears only once)
+      sr.reveal('.home__data, .home__social-icon, .home__img', { cleanup: true });
+      sr.reveal('.about__img, .skills__subtitle, .skills__text', { cleanup: true });
+      sr.reveal('.about__subtitle, .about__text, .skills__img', { delay: 400, cleanup: true });
+      sr.reveal('.skills__data, .work__img', { interval: 200, cleanup: true });
+      sr.reveal('.contact__input, .g-recaptcha, .contact__button', { interval: 200, cleanup: true });
+      sr.reveal('.contact-right', {
+        origin: 'left',
+        distance: '50px',
+        duration: 1500,
+        delay: 200,
+        interval: 200,
+        easing: 'ease-out',
+        reset: true,
+        cleanup: true
+      });
+
+      // Safety: if some elements remain hidden (opacity:0) after reveals, force visible after a short delay
+      setTimeout(() => {
+        document.querySelectorAll('.home, .home__data, .home__social-icon, .home__img').forEach(el => {
+          const comp = window.getComputedStyle(el);
+          if (comp && (comp.opacity === '0' || comp.visibility === 'hidden')) {
+            el.style.opacity = '1';
+            el.style.transform = 'none';
+            el.style.visibility = 'visible';
+          }
+        });
+      }, 800);
+    } else if (typeof window._sr.sync === 'function') {
+      // When already initialized, sync to pick up any DOM changes
+      window._sr.sync();
+    }
+  } catch (err) {
+    console.warn('startAnimations failed:', err);
+  }
+}
+
 window.onload = function () {
   const preloader = document.getElementById('preloader');
   preloader.style.opacity = '0'; // Tambahkan animasi transisi
@@ -31,7 +102,7 @@ document.addEventListener("DOMContentLoaded", () => {
           preloader.style.transition = 'opacity 0.5s ease';
           setTimeout(() => {
               preloader.style.display = 'none';
-              startAnimations(); // Pastikan fungsi ini dipanggil jika digunakan
+              // startAnimations intentionally not called here to avoid double-invocation
           }, 500);
       }
   }, 30); // Percepat interval sesuai kebutuhan
@@ -103,29 +174,7 @@ sections.forEach(current =>{
 window.addEventListener('scroll', scrollActive)
 
 /*===== SCROLL REVEAL ANIMATION =====*/
-const sr = ScrollReveal({
-  origin: 'top',
-  distance: '60px',
-  duration: 2000,
-  delay: 200,
-//     reset: true
-});
-
-sr.reveal('.home__data, .home__social-icon, .home__img',{reset: true,});
-sr.reveal('.home__data, .about__img, .skills__subtitle, .skills__text',{});
-sr.reveal('.home__img, .about__subtitle, .about__text, .skills__img',{delay: 400,});
-sr.reveal('.home__social-icon',{ interval: 200,});
-sr.reveal('.skills__data, .work__img',{interval: 200,});
-sr.reveal('.contact__input, .g-recaptcha, .contact__button',{interval: 200,});
-sr.reveal('.contact-right', {
-  origin: 'left', // Muncul dari kiri
-  distance: '50px', // Jarak pergerakan
-  duration: 1500, // Durasi animasi (1 detik)
-  delay: 200, // Delay sebelum animasi dimulai
-  interval: 200,
-  easing: 'ease-out', // Efek easing
-  reset: true, // Animasi akan diulang saat elemen muncul kembali
-});
+// Moved ScrollReveal initialization into startAnimations() above so it only runs after preloader hides
 
 /*==================== MODAL & AJAX PAGINATION ====================*/
 

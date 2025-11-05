@@ -93,7 +93,7 @@
         <!-- HOME -->
         <section class="home bd-grid" id="home">
             <div class="home__data">
-                <h1 class="home__title">Hai, Saya🗿<span class="home__title-color">Fahd</span>.<br>Programmer | Dev</h1>
+                <h1 class="home__title">Hai, Saya👋<span class="home__title-color">Fahd</span>.<br>Programmer | Dev</h1>
 
                 <a href="https://wa.me/6283800667908?text=Halo%20min,%20Saya%20tertarik%20dengan%20layanan%20pembuatan%20Aplikasi%20anda!"
                     target="_blank" class="button bi-whatsapp"> Hubungi Saya!</a>
@@ -290,7 +290,7 @@
             <div class="footer-content">
                 <small>&copy; 2025 Fahd Portfolio. All Rights Reserved.</small>
                 <small>Design by <a href="https://www.instagram.com/jabie.png')}}/"
-                        target="_blank">@jabie.png')}}</a>.</small>
+                        target="_blank">@jabie.png'</a>.</small>
             </div>
         </div>
     </footer>
