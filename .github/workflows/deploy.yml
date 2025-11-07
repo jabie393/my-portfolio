@@ -1,0 +1,154 @@
+name: 🚀 Laravel + Vite Auto Deploy (Staging & Production)
+
+on:
+  push:
+    branches:
+      - main
+      - staging
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      PROJECT_NAME: "Laravel + Vite"
+      DEPLOY_PATH_PROD: "/www/wwwroot/fahd.my.id"
+      DEPLOY_PATH_STAGING: "/www/wwwroot/staging.fahd.my.id"
+      BACKUP_PATH: "/www/wwwroot/backups"
+
+    steps:
+      # 1️ Checkout kode dari GitHub
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2️ Setup Node.js untuk Vite build
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      # 3️ Install & Build Vite
+      - name: Build Frontend (Vite)
+        run: |
+          npm ci
+          npm run build
+
+      # 4️ Setup PHP untuk Laravel build
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.3
+          extensions: mbstring, bcmath, intl, zip, gd, pdo_mysql
+          coverage: none
+
+      # 5️ Install Composer dependencies
+      - name: Install Composer dependencies
+        run: composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
+
+      # 6️ Tentukan target environment berdasarkan branch
+      - name: Set environment path
+        id: set-env
+        run: |
+          if [[ "${GITHUB_REF##*/}" == "main" ]]; then
+            echo "target_path=${{ env.DEPLOY_PATH_PROD }}" >> $GITHUB_OUTPUT
+            echo "env_label=Production" >> $GITHUB_OUTPUT
+          else
+            echo "target_path=${{ env.DEPLOY_PATH_STAGING }}" >> $GITHUB_OUTPUT
+            echo "env_label=Staging" >> $GITHUB_OUTPUT
+          fi
+
+      # 7️ Backup versi sebelumnya sebelum upload
+      - name: Backup existing deployment
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: |
+            mkdir -p ${{ env.BACKUP_PATH }}
+            cd ${{ steps.set-env.outputs.target_path }}
+            tar -czf ${{ env.BACKUP_PATH }}/backup_$(date +'%Y%m%d_%H%M%S').tar.gz . || echo "Backup skipped"
+
+      # 8️ Upload file ke server via SCP (exclude file besar/tidak penting)
+      - name: Upload Files via SCP
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          source: "./"
+          target: ${{ steps.set-env.outputs.target_path }}
+          strip_components: 0
+          overwrite: true
+          exclude: |
+            .env
+            node_modules/
+            storage/
+            tests/
+            deploy.log
+            .git/
+            .github/
+            public/projects/
+
+      # 9️ Jalankan artisan commands di server
+      - name: Run Laravel Commands
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: |
+            cd ${{ steps.set-env.outputs.target_path }}
+            php artisan down || true
+            php artisan migrate --force
+            php artisan optimize:clear
+            php artisan config:cache
+            php artisan route:cache
+            php artisan view:cache
+            php artisan up
+
+      # 10 Kirim Telegram Notif jika sukses
+      - name: Telegram Notification (Success)
+        if: success()
+        run: |
+          MSG="✅ *Deploy Berhasil!*%0A
+          🌐 Website: *${{ steps.set-env.outputs.env_label }}*%0A
+          🕒 $(date '+%d %b %Y, %H:%M:%S') WIB%0A
+          👤 Commit by: *${{ github.actor }}*%0A
+          🧩 Branch: *${{ github.ref_name }}*%0A
+          💻 Repository: *${{ github.repository }}*"
+          curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
+            -d chat_id=${{ secrets.TELEGRAM_CHAT_ID }} \
+            -d text="$MSG" \
+            -d parse_mode=Markdown
+
+      # Rollback otomatis jika gagal deploy
+      - name: Rollback if failed
+        if: failure()
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: |
+            cd ${{ env.BACKUP_PATH }}
+            LATEST_BACKUP=$(ls -t backup_*.tar.gz | head -n 1)
+            if [ -n "$LATEST_BACKUP" ]; then
+              echo "🔁 Rolling back from backup: $LATEST_BACKUP"
+              tar -xzf $LATEST_BACKUP -C ${{ steps.set-env.outputs.target_path }}
+            fi
+
+      # Telegram Notif jika gagal
+      - name: Telegram Notification (Failed)
+        if: failure()
+        run: |
+          MSG="❌ *Deploy Gagal!*%0A
+          🌐 Website: *${{ steps.set-env.outputs.env_label }}*%0A
+          🧩 Branch: *${{ github.ref_name }}*%0A
+          🧑‍💻 Actor: *${{ github.actor }}*%0A
+          ⚙️ Deploy otomatis akan *rollback* ke versi terakhir.%0A
+          🔍 Cek log GitHub Actions untuk detail error."
+          curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
+            -d chat_id=${{ secrets.TELEGRAM_CHAT_ID }} \
+            -d text="$MSG" \
+            -d parse_mode=Markdown
