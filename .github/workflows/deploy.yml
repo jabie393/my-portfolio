@@ -158,9 +158,10 @@ jobs:
             cd ${{ env.BACKUP_PATH }}
             LATEST_BACKUP=$(ls -t backup_*.tar.gz | head -n 1)
             if [ -n "$LATEST_BACKUP" ]; then
-              echo "🔁 Rolling back from backup: $LATEST_BACKUP"
-              tar -xzf $LATEST_BACKUP -C ${{ steps.set-env.outputs.target_path }}
+              echo "Rolling back from backup: $LATEST_BACKUP"
+              tar -xzf "$LATEST_BACKUP" -C ${{ steps.set-env.outputs.target_path }}
             fi
+
 
       # 14️ Telegram Notif jika gagal
       - name: Telegram Notification (Failed)
