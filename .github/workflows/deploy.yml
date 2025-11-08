@@ -124,7 +124,7 @@ jobs:
         run: |
           MSG="✅ *Deploy Berhasil!*%0A
           🌐 Website: *${{ steps.set-env.outputs.env_label }}*%0A
-          🕒 $(date '+%d %b %Y, %H:%M:%S') WIB%0A
+          🕒 $(TZ='Asia/Jakarta' date '+%d %b %Y, %H:%M:%S') WIB%0A
           👤 Commit by: *${{ github.actor }}*%0A
           🧩 Branch: *${{ github.ref_name }}*%0A
           💻 Repository: *${{ github.repository }}*"
