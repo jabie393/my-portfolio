@@ -49,13 +49,8 @@ jobs:
       - name: Set environment path
         id: set-env
         run: |
-          if [[ "${GITHUB_REF##*/}" == "main" ]]; then
-            echo "target_path=${{ env.DEPLOY_PATH_PROD }}" >> $GITHUB_OUTPUT
-            echo "env_label=Production" >> $GITHUB_OUTPUT
-          else
-            echo "target_path=${{ env.DEPLOY_PATH_STAGING }}" >> $GITHUB_OUTPUT
-            echo "env_label=Staging" >> $GITHUB_OUTPUT
-          fi
+          echo "env_label=fahd.my.id" >> $GITHUB_OUTPUT
+          echo "commit_message=$(git log -1 --pretty=%B)" >> $GITHUB_OUTPUT
 
       # 7️ Kirim Telegram Notif saat deploy dimulai
       - name: Telegram Notification (Start)
