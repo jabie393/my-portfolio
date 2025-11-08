@@ -66,7 +66,7 @@ jobs:
           👤 Oleh: *${{ github.actor }}*%0A
           🧩 Branch: *${{ github.ref_name }}*%0A
           💻 Repository: *${{ github.repository }}*%0A
-          ⏳ Mohon tunggu, proses build & upload sedang berlangsung..."
+          ⏳ Mohon tunggu..."
           curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
             -d chat_id=${{ secrets.TELEGRAM_CHAT_ID }} \
             -d text="$MSG" \
