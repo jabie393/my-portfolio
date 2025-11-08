@@ -65,9 +65,10 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
-            mkdir -p ${{ env.BACKUP_PATH }}
+            mkdir -p /www/wwwroot/backups
             cd ${{ steps.set-env.outputs.target_path }}
-            tar -czf ${{ env.BACKUP_PATH }}/backup_$(date +'%Y%m%d_%H%M%S').tar.gz . || echo "Backup skipped"
+            tar -czf /www/wwwroot/backups/backup_$(date +'%Y%m%d_%H%M%S').tar.gz . || echo "Backup skipped"
+
 
       # 8️ Upload file ke server via SCP (exclude file besar/tidak penting)
       - name: Upload Files via SCP
