@@ -125,9 +125,10 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
             echo "Moving files from /tmp/deploy_tmp to ${{ steps.set-env.outputs.target_path }} ..."
-            sudo rsync -a --delete /tmp/deploy_tmp/ ${{ steps.set-env.outputs.target_path }}/
+            # Memastikan .env tidak terhapus
+            sudo rsync -a --delete --exclude=".env" /tmp/deploy_tmp/ ${{ steps.set-env.outputs.target_path }}/
             sudo rm -rf /tmp/deploy_tmp
-            echo "Files moved successfully!"
+            echo "Files moved successfully (env preserved)!"
 
 
       # 12 Jalankan artisan commands di server
@@ -195,7 +196,7 @@ jobs:
             cd ${{ env.BACKUP_PATH }}
             LATEST_BACKUP=$(ls -t backup_*.tar.gz | head -n 1)
             if [ -n "$LATEST_BACKUP" ]; then
-              echo "🔁 Rolling back from backup: $LATEST_BACKUP"
+              echo "Rolling back from backup: $LATEST_BACKUP"
               tar -xzf $LATEST_BACKUP -C ${{ steps.set-env.outputs.target_path }}
             fi
 
