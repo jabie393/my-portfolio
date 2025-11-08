@@ -144,11 +144,11 @@ jobs:
           use_insecure_cipher: true
           script: |
             echo "🔧 Fixing ownership and permissions..."
-            sudo chown -R www:www ${{ steps.set-env.outputs.target_path }}
-            sudo find ${{ steps.set-env.outputs.target_path }} -type f -exec chmod 644 {} \;
-            sudo find ${{ steps.set-env.outputs.target_path }} -type d -exec chmod 755 {} \;
-            sudo chmod -R 775 ${{ steps.set-env.outputs.target_path }}/storage
-            sudo chmod -R 775 ${{ steps.set-env.outputs.target_path }}/bootstrap/cache
+            sudo chown -R www:www /www/wwwroot/fahd.my.id || true
+            sudo find /www/wwwroot/fahd.my.id -type f -exec chmod 644 {} \; || true
+            sudo find /www/wwwroot/fahd.my.id -type d -exec chmod 755 {} \; || true
+            sudo chmod -R 775 /www/wwwroot/fahd.my.id/storage || true
+            sudo chmod -R 775 /www/wwwroot/fahd.my.id/bootstrap/cache || true
             echo "Permissions fixed!"
 
       # 13 Telegram Notif jika sukses
