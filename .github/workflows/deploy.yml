@@ -49,14 +49,14 @@ jobs:
       - name: Set environment path
         id: set-env
         run: |
-          echo "env_label=*fahd.my.id*" >> $GITHUB_OUTPUT
+          echo "env_label=fahd.my.id" >> $GITHUB_OUTPUT
           echo "commit_message=$(git log -1 --pretty=%B)" >> $GITHUB_OUTPUT
 
       # 7️ Kirim Telegram Notif saat deploy dimulai
       - name: Telegram Notification (Start)
         run: |
           MSG="🚀 *Deploy Dimulai!*%0A
-          🌐 Website: [${{ steps.set-env.outputs.env_label }}](https://${{ steps.set-env.outputs.env_label }})%0A
+          🌐 Website: [*${{ steps.set-env.outputs.env_label }}*](https://${{ steps.set-env.outputs.env_label }})%0A
           🕒 $(TZ='Asia/Jakarta' date '+%d %b %Y, %H:%M:%S') WIB%0A
           👤 Oleh: *${{ github.actor }}*%0A
           💻 Repository: *${{ github.repository }}*%0A
@@ -133,7 +133,7 @@ jobs:
         if: success()
         run: |
           MSG="✅ *Deploy Berhasil!*%0A
-          🌐 Website: [${{ steps.set-env.outputs.env_label }}](https://${{ steps.set-env.outputs.env_label }})%0A
+          🌐 Website: [*${{ steps.set-env.outputs.env_label }}*](https://${{ steps.set-env.outputs.env_label }})%0A
           🕒 $(TZ='Asia/Jakarta' date '+%d %b %Y, %H:%M:%S') WIB%0A
           👤 Commit by: *${{ github.actor }}*%0A
           🧩 Branch: *${{ github.ref_name }}*%0A
@@ -167,7 +167,7 @@ jobs:
         if: failure()
         run: |
           MSG="❌ *Deploy Gagal!*%0A
-          🌐 Website: [${{ steps.set-env.outputs.env_label }}](https://${{ steps.set-env.outputs.env_label }})%0A
+          🌐 Website: [*${{ steps.set-env.outputs.env_label }}*](https://${{ steps.set-env.outputs.env_label }})%0A
           🕒 $(TZ='Asia/Jakarta' date '+%d %b %Y, %H:%M:%S') WIB%0A
           👤 Commit by: *${{ github.actor }}*%0A
           🧩 Branch: *${{ github.ref_name }}*%0A
