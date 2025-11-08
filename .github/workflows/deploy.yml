@@ -134,7 +134,24 @@ jobs:
             php artisan view:cache
             php artisan up
 
-      # 12️ Telegram Notif jika sukses
+      # 12️ Perbaiki permission setelah deploy
+      - name: Fix File Permissions
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          use_insecure_cipher: true
+          script: |
+            echo "🔧 Fixing ownership and permissions..."
+            sudo chown -R www:www ${{ steps.set-env.outputs.target_path }}
+            sudo find ${{ steps.set-env.outputs.target_path }} -type f -exec chmod 644 {} \;
+            sudo find ${{ steps.set-env.outputs.target_path }} -type d -exec chmod 755 {} \;
+            sudo chmod -R 775 ${{ steps.set-env.outputs.target_path }}/storage
+            sudo chmod -R 775 ${{ steps.set-env.outputs.target_path }}/bootstrap/cache
+            echo "Permissions fixed!"
+
+      # 13 Telegram Notif jika sukses
       - name: Telegram Notification (Success)
         if: success()
         run: |
@@ -151,7 +168,7 @@ jobs:
             -d parse_mode="Markdown" \
             -d text="$MSG"
 
-      # 13️ Rollback otomatis jika gagal deploy
+      # 14 Rollback otomatis jika gagal deploy
       - name: Rollback if failed
         if: failure()
         uses: appleboy/ssh-action@v1.0.0
@@ -168,7 +185,7 @@ jobs:
               tar -xzf $LATEST_BACKUP -C ${{ steps.set-env.outputs.target_path }}
             fi
 
-      # 14️ Telegram Notif jika gagal
+      # 15 Telegram Notif jika gagal
       - name: Telegram Notification (Failed)
         if: failure()
         run: |
