@@ -101,7 +101,7 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           source: "./"
-          target: "/tmp/deploy_fahd"
+          target: "/tmp/deploy_tmp"
           strip_components: 0
           overwrite: true
           use_insecure_cipher: true
@@ -124,9 +124,9 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
-            echo "🚚 Moving files from /tmp/deploy_fahd to ${{ steps.set-env.outputs.target_path }} ..."
-            sudo rsync -a --delete /tmp/deploy_fahd/ ${{ steps.set-env.outputs.target_path }}/
-            sudo rm -rf /tmp/deploy_fahd
+            echo "Moving files from /tmp/deploy_tmp to ${{ steps.set-env.outputs.target_path }} ..."
+            sudo rsync -a --delete /tmp/deploy_tmp/ ${{ steps.set-env.outputs.target_path }}/
+            sudo rm -rf /tmp/deploy_tmp
             echo "Files moved successfully!"
 
 
@@ -157,7 +157,7 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           use_insecure_cipher: true
           script: |
-            echo "🔧 Fixing ownership and permissions..."
+            echo "Fixing ownership and permissions..."
             sudo chown -R www:www /www/wwwroot/fahd.my.id || true
             sudo find /www/wwwroot/fahd.my.id -type f -exec chmod 644 {} \; || true
             sudo find /www/wwwroot/fahd.my.id -type d -exec chmod 755 {} \; || true
