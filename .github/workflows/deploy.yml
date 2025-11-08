@@ -49,20 +49,19 @@ jobs:
       - name: Set environment path
         id: set-env
         run: |
-          if [[ "${GITHUB_REF_NAME}" == "main" ]]; then
+          if [[ "${GITHUB_REF##*/}" == "main" ]]; then
             echo "target_path=${{ env.DEPLOY_PATH_PROD }}" >> $GITHUB_OUTPUT
-            echo "env_label=fahd.my.id" >> $GITHUB_OUTPUT
+            echo "env_label=Production" >> $GITHUB_OUTPUT
           else
             echo "target_path=${{ env.DEPLOY_PATH_STAGING }}" >> $GITHUB_OUTPUT
-            echo "env_label=staging.fahd.my.id" >> $GITHUB_OUTPUT
+            echo "env_label=Staging" >> $GITHUB_OUTPUT
           fi
-          echo "commit_message=$(git log -1 --pretty=%B)" >> $GITHUB_OUTPUT
 
       # 7️ Kirim Telegram Notif saat deploy dimulai
       - name: Telegram Notification (Start)
         run: |
           MSG="🚀 *Deploy Dimulai!*%0A
-          🌐 Website: [*${{ steps.set-env.outputs.env_label }}*](https://${{ steps.set-env.outputs.env_label }})%0A
+          🌐 Website: [${{ steps.set-env.outputs.env_label }}](https://${{ steps.set-env.outputs.env_label }})%0A
           🕒 $(TZ='Asia/Jakarta' date '+%d %b %Y, %H:%M:%S') WIB%0A
           👤 Oleh: *${{ github.actor }}*%0A
           💻 Repository: *${{ github.repository }}*%0A
@@ -95,17 +94,26 @@ jobs:
 
       # 10️ Upload file ke server via SCP
       - name: Upload Files via SCP
-        uses: appleboy/scp-action@v0.1.7
+        uses: appleboy/scp-action@v0.1.4
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
-          source: "."
+          source: "./"
           target: ${{ steps.set-env.outputs.target_path }}
-          rm: true
           strip_components: 0
           overwrite: true
-          # ❌ Hapus recursive dan exclude (tidak valid di v0.1.7)
+          use_insecure_cipher: true
+          proxy_use_insecure_cipher: true
+          exclude: |
+            .env
+            node_modules/
+            storage/
+            tests/
+            deploy.log
+            .git/
+            .github/
+            public/projects/
 
       # 11️ Jalankan artisan commands di server
       - name: Run Laravel Commands
@@ -130,7 +138,7 @@ jobs:
         if: success()
         run: |
           MSG="✅ *Deploy Berhasil!*%0A
-          🌐 Website: [*${{ steps.set-env.outputs.env_label }}*](https://${{ steps.set-env.outputs.env_label }})%0A
+          🌐 Website: [${{ steps.set-env.outputs.env_label }}](https://${{ steps.set-env.outputs.env_label }})%0A
           🕒 $(TZ='Asia/Jakarta' date '+%d %b %Y, %H:%M:%S') WIB%0A
           👤 Commit by: *${{ github.actor }}*%0A
           🧩 Branch: *${{ github.ref_name }}*%0A
@@ -155,9 +163,8 @@ jobs:
             cd ${{ env.BACKUP_PATH }}
             LATEST_BACKUP=$(ls -t backup_*.tar.gz | head -n 1)
             if [ -n "$LATEST_BACKUP" ]; then
-              echo "Rolling back from backup: $LATEST_BACKUP"
-              rm -rf ${{ steps.set-env.outputs.target_path }}/*
-              tar -xzf "$LATEST_BACKUP" -C ${{ steps.set-env.outputs.target_path }}
+              echo "🔁 Rolling back from backup: $LATEST_BACKUP"
+              tar -xzf $LATEST_BACKUP -C ${{ steps.set-env.outputs.target_path }}
             fi
 
       # 14️ Telegram Notif jika gagal
@@ -165,7 +172,7 @@ jobs:
         if: failure()
         run: |
           MSG="❌ *Deploy Gagal!*%0A
-          🌐 Website: [*${{ steps.set-env.outputs.env_label }}*](https://${{ steps.set-env.outputs.env_label }})%0A
+          🌐 Website: [${{ steps.set-env.outputs.env_label }}](https://${{ steps.set-env.outputs.env_label }})%0A
           🕒 $(TZ='Asia/Jakarta' date '+%d %b %Y, %H:%M:%S') WIB%0A
           👤 Commit by: *${{ github.actor }}*%0A
           🧩 Branch: *${{ github.ref_name }}*%0A
