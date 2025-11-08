@@ -49,7 +49,13 @@ jobs:
       - name: Set environment path
         id: set-env
         run: |
-          echo "env_label=fahd.my.id" >> $GITHUB_OUTPUT
+          if [[ "${GITHUB_REF_NAME}" == "main" ]]; then
+            echo "target_path=${{ env.DEPLOY_PATH_PROD }}" >> $GITHUB_OUTPUT
+            echo "env_label=fahd.my.id" >> $GITHUB_OUTPUT
+          else
+            echo "target_path=${{ env.DEPLOY_PATH_STAGING }}" >> $GITHUB_OUTPUT
+            echo "env_label=staging.fahd.my.id" >> $GITHUB_OUTPUT
+          fi
           echo "commit_message=$(git log -1 --pretty=%B)" >> $GITHUB_OUTPUT
 
       # 7️ Kirim Telegram Notif saat deploy dimulai
