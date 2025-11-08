@@ -93,15 +93,15 @@ jobs:
             cd /www/wwwroot/fahd.my.id || exit 0
             sudo -u www tar -czf /www/wwwroot/backups/backup_$(date +'%Y%m%d_%H%M%S').tar.gz . || echo "Backup skipped"
 
-      # 10️ Upload file ke server via SCP
-      - name: Upload Files via SCP
+      # 10️ Upload file ke server via SCP (ke folder sementara)
+      - name: Upload Files via SCP (to temp folder)
         uses: appleboy/scp-action@v0.1.4
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           source: "./"
-          target: ${{ steps.set-env.outputs.target_path }}
+          target: "/tmp/deploy_fahd"
           strip_components: 0
           overwrite: true
           use_insecure_cipher: true
@@ -116,7 +116,21 @@ jobs:
             .github/
             public/projects/
 
-      # 11️ Jalankan artisan commands di server
+      # 11 Pindahkan dari temp ke folder sebenarnya
+      - name: Move uploaded files to webroot
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: |
+            echo "🚚 Moving files from /tmp/deploy_fahd to ${{ steps.set-env.outputs.target_path }} ..."
+            sudo rsync -a --delete /tmp/deploy_fahd/ ${{ steps.set-env.outputs.target_path }}/
+            sudo rm -rf /tmp/deploy_fahd
+            echo "Files moved successfully!"
+
+
+      # 12 Jalankan artisan commands di server
       - name: Run Laravel Commands
         uses: appleboy/ssh-action@v1.0.0
         with:
@@ -134,7 +148,7 @@ jobs:
             php artisan view:cache
             php artisan up
 
-      # 12️ Perbaiki permission setelah deploy
+      # 13 Perbaiki permission setelah deploy
       - name: Fix File Permissions
         uses: appleboy/ssh-action@v1.0.0
         with:
@@ -151,7 +165,7 @@ jobs:
             sudo chmod -R 775 /www/wwwroot/fahd.my.id/bootstrap/cache || true
             echo "Permissions fixed!"
 
-      # 13 Telegram Notif jika sukses
+      # 14 Telegram Notif jika sukses
       - name: Telegram Notification (Success)
         if: success()
         run: |
@@ -168,7 +182,7 @@ jobs:
             -d parse_mode="Markdown" \
             -d text="$MSG"
 
-      # 14 Rollback otomatis jika gagal deploy
+      # 15 Rollback otomatis jika gagal deploy
       - name: Rollback if failed
         if: failure()
         uses: appleboy/ssh-action@v1.0.0
@@ -185,7 +199,7 @@ jobs:
               tar -xzf $LATEST_BACKUP -C ${{ steps.set-env.outputs.target_path }}
             fi
 
-      # 15 Telegram Notif jika gagal
+      # 16 Telegram Notif jika gagal
       - name: Telegram Notification (Failed)
         if: failure()
         run: |
