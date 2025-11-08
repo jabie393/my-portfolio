@@ -105,17 +105,7 @@ jobs:
           rm: true
           strip_components: 0
           overwrite: true
-          recursive: true
-          exclude: |
-            .env
-            .user.ini
-            node_modules/
-            storage/
-            tests/
-            .git/
-            .github/
-            public/projects/
-
+          # ❌ Hapus recursive dan exclude (tidak valid di v0.1.7)
 
       # 11️ Jalankan artisan commands di server
       - name: Run Laravel Commands
@@ -166,9 +156,9 @@ jobs:
             LATEST_BACKUP=$(ls -t backup_*.tar.gz | head -n 1)
             if [ -n "$LATEST_BACKUP" ]; then
               echo "Rolling back from backup: $LATEST_BACKUP"
+              rm -rf ${{ steps.set-env.outputs.target_path }}/*
               tar -xzf "$LATEST_BACKUP" -C ${{ steps.set-env.outputs.target_path }}
             fi
-
 
       # 14️ Telegram Notif jika gagal
       - name: Telegram Notification (Failed)
