@@ -70,7 +70,7 @@ jobs:
           ⏳ Mohon tunggu..."
           curl -s -X POST https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage \
             -d chat_id=${{ secrets.TELEGRAM_CHAT_ID }} \
-            -d parse_mode="MarkdownV2" \
+            -d parse_mode="Markdown" \
             -d text="$MSG"
 
       # 8️ Disable host key checking biar SSH gak error
@@ -148,7 +148,7 @@ jobs:
           💬 Pesan Commit: _${{ steps.set-env.outputs.commit_message }}_"
           curl -s -X POST https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage \
             -d chat_id=${{ secrets.TELEGRAM_CHAT_ID }} \
-            -d parse_mode="MarkdownV2" \
+            -d parse_mode="Markdown" \
             -d text="$MSG"
 
       # 13️ Rollback otomatis jika gagal deploy
@@ -183,5 +183,5 @@ jobs:
           💬 Pesan Commit: _${{ steps.set-env.outputs.commit_message }}_"
           curl -s -X POST https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage \
             -d chat_id=${{ secrets.TELEGRAM_CHAT_ID }} \
-            -d parse_mode="MarkdownV2" \
+            -d parse_mode="Markdown" \
             -d text="$MSG"
