@@ -61,22 +61,17 @@ jobs:
       # 7️ Kirim Telegram Notif saat deploy dimulai
       - name: Telegram Notification (Start)
         run: |
-          MSG=$(cat <<EOF
-          🚀 *Deploy Dimulai!*
-          🌐 Website: [${{ steps.set-env.outputs.env_label }}](https://${{ steps.set-env.outputs.env_label }})
-          🕒 $(TZ='Asia/Jakarta' date '+%d %b %Y, %H:%M:%S') WIB
-          👤 Oleh: *${{ github.actor }}*
-          💻 Repository: *${{ github.repository }}*
-          🧩 Branch: *${{ github.ref_name }}*
-          ⏳ Mohon tunggu...
-          EOF
-          )
-          for CHAT_ID in ${{ secrets.TELEGRAM_CHAT_IDS }}; do
-            curl -s -X POST https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage \
-              -d chat_id=$CHAT_ID \
-              -d parse_mode="Markdown" \
-              -d text="$MSG"
-          done
+          MSG="🚀 *Deploy Dimulai!*%0A
+          🌐 Website: [${{ steps.set-env.outputs.env_label }}](https://${{ steps.set-env.outputs.env_label }})%0A
+          🕒 $(TZ='Asia/Jakarta' date '+%d %b %Y, %H:%M:%S') WIB%0A
+          👤 Oleh: *${{ github.actor }}*%0A
+          💻 Repository: *${{ github.repository }}*%0A
+          🧩 Branch: *${{ github.ref_name }}*%0A
+          ⏳ Mohon tunggu..."
+          curl -s -X POST https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage \
+            -d chat_id=${{ secrets.TELEGRAM_CHAT_ID }} \
+            -d parse_mode="Markdown" \
+            -d text="$MSG"
 
       # 8️ Disable host key checking biar SSH gak error
       - name: Disable host key checking
@@ -175,23 +170,18 @@ jobs:
       - name: Telegram Notification (Success)
         if: success()
         run: |
-          MSG=$(cat <<EOF
-          ✅ *Deploy Berhasil!*
-          🌐 Website: [${{ steps.set-env.outputs.env_label }}](https://${{ steps.set-env.outputs.env_label }})
-          🕒 $(TZ='Asia/Jakarta' date '+%d %b %Y, %H:%M:%S') WIB
-          👤 Commit by: *${{ github.actor }}*
-          🧩 Branch: *${{ github.ref_name }}*
-          💻 Repository: *${{ github.repository }}*
-          🎉 Berhasil di-*deploy* tanpa error!
-          💬 Pesan Commit: _${{ steps.set-env.outputs.commit_message }}_
-          EOF
-          )
-          for CHAT_ID in ${{ secrets.TELEGRAM_CHAT_IDS }}; do
-            curl -s -X POST https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage \
-              -d chat_id=$CHAT_ID \
-              -d parse_mode="Markdown" \
-              -d text="$MSG"
-          done
+          MSG="✅ *Deploy Berhasil!*%0A
+          🌐 Website: [${{ steps.set-env.outputs.env_label }}](https://${{ steps.set-env.outputs.env_label }})%0A
+          🕒 $(TZ='Asia/Jakarta' date '+%d %b %Y, %H:%M:%S') WIB%0A
+          👤 Commit by: *${{ github.actor }}*%0A
+          🧩 Branch: *${{ github.ref_name }}*%0A
+          💻 Repository: *${{ github.repository }}*%0A
+          🎉 Berhasil di-*deploy* tanpa error!%0A
+          💬 Pesan Commit: _${{ steps.set-env.outputs.commit_message }}_"
+          curl -s -X POST https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage \
+            -d chat_id=${{ secrets.TELEGRAM_CHAT_ID }} \
+            -d parse_mode="Markdown" \
+            -d text="$MSG"
 
       # 15 Rollback otomatis jika gagal deploy
       - name: Rollback if failed
@@ -214,21 +204,16 @@ jobs:
       - name: Telegram Notification (Failed)
         if: failure()
         run: |
-          MSG=$(cat <<EOF
-          ❌ *Deploy Gagal!*
-          🌐 Website: [${{ steps.set-env.outputs.env_label }}](https://${{ steps.set-env.outputs.env_label }})
-          🕒 $(TZ='Asia/Jakarta' date '+%d %b %Y, %H:%M:%S') WIB
-          👤 Commit by: *${{ github.actor }}*
-          🧩 Branch: *${{ github.ref_name }}*
-          💻 Repository: *${{ github.repository }}*
-          ⚙️ Deploy otomatis akan *rollback* ke versi terakhir.
-          🔍 Cek log GitHub Actions untuk detail error.
-          💬 Pesan Commit: _${{ steps.set-env.outputs.commit_message }}_
-          EOF
-          )
-          for CHAT_ID in ${{ secrets.TELEGRAM_CHAT_IDS }}; do
-            curl -s -X POST https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage \
-              -d chat_id=$CHAT_ID \
-              -d parse_mode="Markdown" \
-              -d text="$MSG"
-          done
+          MSG="❌ *Deploy Gagal!*%0A
+          🌐 Website: [${{ steps.set-env.outputs.env_label }}](https://${{ steps.set-env.outputs.env_label }})%0A
+          🕒 $(TZ='Asia/Jakarta' date '+%d %b %Y, %H:%M:%S') WIB%0A
+          👤 Commit by: *${{ github.actor }}*%0A
+          🧩 Branch: *${{ github.ref_name }}*%0A
+          💻 Repository: *${{ github.repository }}*%0A
+          ⚙️ Deploy otomatis akan *rollback* ke versi terakhir.%0A
+          🔍 Cek log GitHub Actions untuk detail error.%0A
+          💬 Pesan Commit: _${{ steps.set-env.outputs.commit_message }}_"
+          curl -s -X POST https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage \
+            -d chat_id=${{ secrets.TELEGRAM_CHAT_ID }} \
+            -d parse_mode="Markdown" \
+            -d text="$MSG"
